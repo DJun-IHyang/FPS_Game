@@ -1,38 +1,96 @@
+ï»¿using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// ¸ñÀû : ¸¶¿ì½º ¿À¸¥ÂÊ ¹öÆ°À» ´­·¯ ÆøÅºÀ» Æ¯Á¤ ¹æÇâÀ¸·Î ¹ß»çÇÏ°í ½Í´Ù.
-// ÇÊ¿ä¼Ó¼º : ÆøÅº °ÔÀÓ¿ÀºêÁ§Æ®, ¹ß»çÀ§Ä¡, ¹æÇâ
-// 1-1. ¸¶¿ì½º ¿À¸¥ÂÊ ¹öÆ°À» ´©¸¥´Ù.
-// 1-2. ÆøÅº °ÔÀÓ¿ÀºêÁ§Æ®¸¦ »ı¼ºÇÏ°í firePosition¿¡ À§Ä¡½ÃÅ²´Ù.
-// 1-3. ÆøÅº ¿ÀºêÁ§Æ®ÀÇ rigidbody¸¦ °¡Á®¿Í¼­ Ä«¸Ş¶ó Á¤¸é ¹æÇâÀ¸·Î ÈûÀ» °¡ÇÑ´Ù.
+// ëª©ì  : ë§ˆìš°ìŠ¤ ì˜¤ë¥¸ìª½ ë²„íŠ¼ì„ ëˆŒëŸ¬ í­íƒ„ì„ íŠ¹ì • ë°©í–¥ìœ¼ë¡œ ë°œì‚¬í•˜ê³  ì‹¶ë‹¤.
+// í•„ìš”ì†ì„±1 : í­íƒ„ ê²Œì„ì˜¤ë¸Œì íŠ¸, ë°œì‚¬ìœ„ì¹˜, ë°©í–¥
+// 1-1. ë§ˆìš°ìŠ¤ ì˜¤ë¥¸ìª½ ë²„íŠ¼ì„ ëˆ„ë¥¸ë‹¤.
+// 1-2. í­íƒ„ ê²Œì„ì˜¤ë¸Œì íŠ¸ë¥¼ ìƒì„±í•˜ê³  firePositionì— ìœ„ì¹˜ì‹œí‚¨ë‹¤.
+// 1-3. í­íƒ„ ì˜¤ë¸Œì íŠ¸ì˜ rigidbodyë¥¼ ê°€ì ¸ì™€ì„œ ì¹´ë©”ë¼ ì •ë©´ ë°©í–¥ìœ¼ë¡œ í˜ì„ ê°€í•œë‹¤.
+
+// ëª©ì 2 : ë§ˆìš°ìŠ¤ ì™¼ìª½ ë²„íŠ¼ì„ ëˆ„ë¥´ë©´ ì‹œì„  ë°©í–¥ìœ¼ë¡œ ì´ì„ ë°œì‚¬í•˜ê³  ì‹¶ë‹¤.
+// í•„ìš”ì†ì„±2 : í”¼ê²©íš¨ê³¼ ê²Œì„ì˜¤ë¸Œì íŠ¸, ì´í™íŠ¸ì˜ íŒŒí‹°í´ ì‹œìŠ¤í…œ
+// 2-1. ë§ˆìš°ìŠ¤ ì™¼ìª½ ë²„íŠ¼ì„ ëˆ„ë¥¸ë‹¤.
+// 2-2. ë ˆì´ë¥¼ ìƒì„±í•˜ê³  ë°œì‚¬ìœ„ì¹˜ì™€ ë°œì‚¬ ë°©í–¥ì„ ì„¤ì •í•œë‹¤.
+// 2-3. ë ˆì´ê°€ ë¶€ë”ªíŒ ëŒ€ìƒì˜ ì •ë³´ë¥¼ ì €ì¥í•  ìˆ˜ ìˆëŠ” ë³€ìˆ˜ë¥¼ ë§Œë“ ë‹¤.
+// 2-4. ë ˆì´ë¥¼ ë°œì‚¬í•˜ê³  ë¶€ë”ªíŒ ë¬¼ì²´ê°€ ìˆìœ¼ë©´ ê·¸ ìœ„ì¹˜ì— í”¼ê²© íš¨ê³¼ë¥¼ ë§Œë“ ë‹¤.
+
+// ëª©ì 3 : ë ˆì´ê°€ ë¶€ë”ªíŒ ëŒ€ìƒì´ Enemyë¼ë©´ Enemyì—ê²Œ ë°ë¯¸ì§€ë¥¼ ì£¼ê² ë‹¤.
 public class PlayerFire : MonoBehaviour
 {
-    // ÇÊ¿ä¼Ó¼º : ÆøÅº °ÔÀÓ¿ÀºêÁ§Æ®, ¹ß»çÀ§Ä¡, ¹æÇâ
+    // í•„ìš”ì†ì„± : í­íƒ„ ê²Œì„ì˜¤ë¸Œì íŠ¸, ë°œì‚¬ìœ„ì¹˜, ë°©í–¥
     public GameObject bomb;
     public GameObject firePosition;
     public float power;
+    private PlayerFire playerFire;
 
+    // í•„ìš”ì†ì„± : í”¼ê²©íš¨ê³¼ ê²Œì„ì˜¤ë¸Œì íŠ¸, ì´í™íŠ¸ì˜ íŒŒí‹°í´ ì‹œìŠ¤í…œ
+    public GameObject hitEffect;
+    ParticleSystem particleSystem;
+    public int weaponPower = 2;
 
+    void Awake()
+    {
+        playerFire = GameObject.Find("Player").GetComponent<PlayerFire>();
+    }
+
+    private void Start()
+    {
+        particleSystem = hitEffect.GetComponent<ParticleSystem>();
+    }
 
     // Update is called once per frame
     void Update()
     {
-        // ¸ñÀû : ¸¶¿ì½º ¿À¸¥ÂÊ ¹öÆ°À» ´­·¯ ÆøÅºÀ» Æ¯Á¤ ¹æÇâÀ¸·Î ¹ß»çÇÏ°í ½Í´Ù.
-        // 1-1. ¸¶¿ì½º ¿À¸¥ÂÊ ¹öÆ°À» ´©¸¥´Ù.
-        if (Input.GetMouseButtonDown(1)) // ¿ŞÂÊ(0), ¿À¸¥ÂÊ(1), ÈÙ(2)
+        // ëª©ì  : ë§ˆìš°ìŠ¤ ì˜¤ë¥¸ìª½ ë²„íŠ¼ì„ ëˆŒëŸ¬ í­íƒ„ì„ íŠ¹ì • ë°©í–¥ìœ¼ë¡œ ë°œì‚¬í•˜ê³  ì‹¶ë‹¤.
+        // 1-1. ë§ˆìš°ìŠ¤ ì˜¤ë¥¸ìª½ ë²„íŠ¼ì„ ëˆ„ë¥¸ë‹¤.
+        if (Input.GetMouseButtonDown(1)) // ì™¼ìª½(0), ì˜¤ë¥¸ìª½(1), íœ (2)
         {
-            // 1-2. ÆøÅº °ÔÀÓ¿ÀºêÁ§Æ®¸¦ »ı¼ºÇÏ°í firePosition¿¡ À§Ä¡½ÃÅ²´Ù.
+            // 1-2. í­íƒ„ ê²Œì„ì˜¤ë¸Œì íŠ¸ë¥¼ ìƒì„±í•˜ê³  firePositionì— ìœ„ì¹˜ì‹œí‚¨ë‹¤.
             GameObject bombGO = Instantiate(bomb);
             bombGO.transform.position = firePosition.transform.position;
 
-            // 1-3. ÆøÅº ¿ÀºêÁ§Æ®ÀÇ rigidbody¸¦ °¡Á®¿Í¼­ Ä«¸Ş¶ó Á¤¸é ¹æÇâÀ¸·Î ÈûÀ» °¡ÇÑ´Ù.
+            // 1-3. í­íƒ„ ì˜¤ë¸Œì íŠ¸ì˜ rigidbodyë¥¼ ê°€ì ¸ì™€ì„œ ì¹´ë©”ë¼ ì •ë©´ ë°©í–¥ìœ¼ë¡œ í˜ì„ ê°€í•œë‹¤.
             Rigidbody rigidbody = bombGO.GetComponent<Rigidbody>();
-            rigidbody.AddForce(Camera.main.transform.forward * power,  ForceMode.Impulse);
+            rigidbody.AddForce(Camera.main.transform.forward * power, ForceMode.Impulse);
+        }
+
+        // 2-1. ë§ˆìš°ìŠ¤ ì™¼ìª½ ë²„íŠ¼ì„ ëˆ„ë¥¸ë‹¤.
+        if (Input.GetMouseButtonDown(0)) // ì™¼ìª½(0), ì˜¤ë¥¸ìª½(1), íœ (2)
+        {
+            // 2-2. ë ˆì´ë¥¼ ìƒì„±í•˜ê³  ë°œì‚¬ìœ„ì¹˜ì™€ ë°œì‚¬ ë°©í–¥ì„ ì„¤ì •í•œë‹¤.
+            Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
+
+            // 2-3. ë ˆì´ê°€ ë¶€ë”ªíŒ ëŒ€ìƒì˜ ì •ë³´ë¥¼ ì €ì¥í•  ìˆ˜ ìˆëŠ” ë³€ìˆ˜ë¥¼ ë§Œë“ ë‹¤.
+            RaycastHit hitInfo = new RaycastHit();
+
+            // 2-4. ë ˆì´ë¥¼ ë°œì‚¬í•˜ê³ 
+            if (Physics.Raycast(ray, out hitInfo))   // ref & out
+            {
+                
+                print("ì¶©ëŒì²´ì™€ì˜ ê±°ë¦¬: " + hitInfo.distance);
+                // ë¶€ë”ªíŒ ë¬¼ì²´ê°€ ìˆìœ¼ë©´ ê·¸ ìœ„ì¹˜ì— í”¼ê²© íš¨ê³¼ë¥¼(ë²•ì„ ë²¡í„° ë°©í–¥ìœ¼ë¡œ) ë§Œë“ ë‹¤.
+                hitEffect.transform.position = hitInfo.point;
+                hitEffect.transform.forward = hitInfo.normal;
+
+                // í”¼ê²© ì´í™íŠ¸ë¥¼ ì¬ìƒí•œë‹¤.
+                particleSystem.Play();
+
+                // ëª©ì 3 : ë ˆì´ê°€ ë¶€ë”ªíŒ ëŒ€ìƒì´ Enemyë¼ë©´ Enemyì—ê²Œ ë°ë¯¸ì§€ë¥¼ ì£¼ê² ë‹¤.
+                if (hitInfo.transform.gameObject.layer == LayerMask.NameToLayer("Enemy"))
+                {
+                    EnemyFSM enemyFSM = hitInfo.transform.GetComponent<EnemyFSM>();
+                    enemyFSM.DamageAction(weaponPower);
+                }
+
+            }
+
         }
 
 
 
     }
+
+
 }
