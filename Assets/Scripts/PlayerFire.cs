@@ -180,7 +180,7 @@ public class PlayerFire : MonoBehaviour
     IEnumerator ShootEffOn(float duration)
     {
         // 일정 시간 후에 사라지는 총구 이펙트를 랜덤으로 활성화 한다.
-        int randNum = Random.Range(0, fireFlashEffs.Length - 1);
+        int randNum = Random.Range(0, fireFlashEffs.Length - 1);    
 
         fireFlashEffs[randNum].SetActive(true);
 
