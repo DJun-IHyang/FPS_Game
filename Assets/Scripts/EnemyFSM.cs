@@ -1,36 +1,55 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
+using UnityEngine.UI;
 
-// ��ǥ : ���� FSM ���̾�׷��� ���� ���۽�Ű�� �ʹ�.
-// �ʿ�Ӽ�1 : �� ���� 
+// 목표 : 적의 FSM 다이어그램에 따라 동작시키고 싶다.
+// 필요속성1 : 적 상태 
 
-// ��ǥ2 : �÷��̾���� �Ÿ��� �����ؼ� Ư�� ���·� ����� �ش�.
-// �ʿ�Ӽ�2 : �÷��̾���� �Ÿ�, �÷��̾� Ʈ������
+// 목표2 : 플레이어와의 거리를 측정해서 특정 상태로 만들어 준다.
+// 필요속성2 : 플레이어와의 거리, 플레이어 트랜스폼
 
-// ��ǥ3 : ���� ���°� Move�� ��, �÷��̾���� �Ÿ��� ���� ���� ���̸� ���� �÷��̾ ���󰡰�
-// ���� ���� ���� ������ �������� ���¸� ��ȯ�Ѵ�.
-// �ʿ�Ӽ�3 : �̵��ӵ�, ���� �̵��� ���� ĳ������Ʈ�ѷ�, ���ݹ���
+// 목표3 : 적의 상태가 Move일 때, 플레이어와의 거리가 공격 범위 밖이면 적이 플레이어를 따라가고
+// 공격 범위 내로 들어오면 공격으로 상태를 전환한다.
+// 필요속성3 : 이동속도, 적의 이동을 위한 캐릭터컨트롤러, 공격범위
 
-// ��ǥ4 : �÷��̾ ���� ���� �ȿ� ���ý� Ư�� �ð��� �ѹ��� attackPower�� ������ �����Ѵ�.
-// �ʿ�Ӽ�4 : ����ð�, Ư�����ݵ�����, attackPower
+// 목표4 : 플레이어가 공격 범위 안에 들어올시 특정 시간에 한번씩 attackPower의 힘으로 공격한다.
+// 필요속성4 : 현재시간, 특정공격딜레이, attackPower
 
-// ��ǥ5 : �÷��̾ ���󰡴ٰ� �ʱ� ��ġ���� ���� �Ÿ��� ����� Return ���·� ��ȯ�Ѵ�.
-// �ʿ�Ӽ�5 : �ʱ���ġ, �̵����� ����
+// 목표5 : 플레이어를 따라가다가 초기 위치에서 일정 거리를 벗어나면 Return 상태로 전환한다.
+// 필요속성5 : 초기위치, 이동가능 범위
 
-// ��ǥ6 : �ʱ� ��ġ�� ���ƿ´�. Ư���Ÿ� �̳���, Idle ���·� ��ȯ�Ѵ�.
-// �ʿ�Ӽ�6 : Ư���Ÿ�
+// 목표6 : 초기 위치로 돌아온다. 특정거리 이내면, Idle 상태로 전환한다.
+// 필요속성6 : 특정거리
 
-// ��ǥ7 : �÷��̾��� ������ ������ hitDamage��ŭ ���ʹ��� hp�� ���ҽ�Ų��
-// �ʿ�Ӽ�7 : hp
+// 목표7 : 플레이어의 공격을 받으면 hitDamage만큼 에너미의 hp를 감   소시킨다
+// 필요속성7 : hp
 
-// ��ǥ8 : ���ʹ��� ü���� 0���� ũ�� �ǰݻ��·� ��ȯ
-// ��ǥ9 : �׷��� ������ �������� ��ȯ
+// 목표8 : 1초 후에 내 자신을 제거 하겠다.
+
+// 목표9 : 현재 에너미의 hp(%)를 hp 슬라이더에 적용한다
+// 필요속성9 : HP, maxHP, Slider
+
+// 목표10 : GameManager가 Ready 상태 이거나 GameOver 상태 일 때는 플레이어, 적이 움직일 수 없도록 한다. 
+
+// < Alpha upgrade >
+// 목표11 : 1번 상태에서 2번 상태로 Animation 전환을 한다.
+//필요속성11. Animator
+
+// 목표12 : 네비게이션 에이전트의 최소 거리를 입력해 주고, 플레이어를 따라갈 수 있도록 한다.
+// 필요속성12 : 네비게이션 에이전트
+
+// 목표13 : 네비게이션 에이전트의 이동을 멈추고 네비게이션 경로를 초기화 해준다.
+
+// 목표14 : Enemy의 초기 속도를 Agent의 속도에 적용하고 싶다.
+
+// 목표15 : 에이전트가 NavMeshLink에 올라가고 내려가는지 확인하여 점프 애니메이션을 넣고싶다.
 public class EnemyFSM : MonoBehaviour
 {
-    // �ʿ�Ӽ�1 : �� ���� 
-    enum EnemyState //������
+    // 필요속성1 : 적 상태 
+    enum EnemyState //열거형
     {
         Idle,
         Move,
@@ -41,30 +60,40 @@ public class EnemyFSM : MonoBehaviour
     }
     EnemyState enemyState;
 
-    // �ʿ�Ӽ�2 : �÷��̾���� �Ÿ�, �÷��̾� Ʈ������
+    // 필요속성2 : 플레이어와의 거리, 플레이어 트랜스폼
     public float findDistance = 5;
     Transform player;
 
-    // �ʿ�Ӽ�3 : �̵��ӵ�, ���� �̵��� ���� ĳ������Ʈ�ѷ�
+    // 필요속성3 : 이동속도, 적의 이동을 위한 캐릭터컨트롤러
     public float moveSpeed;
     CharacterController characterController;
     public float attackDistance = 2.0f;
 
-    // �ʿ�Ӽ�4 : ����ð�, Ư�����ݵ�����
+    // 필요속성4 : 현재시간, 특정공격딜레이
     float currentTime;
     public float attackDelay = 2.0f;
-    // ���ʹ��� ���ݷ�
+    // 에너미의 공격력
     public int attackPower = 3;
 
-    // �ʿ�Ӽ�5 : �ʱ���ġ, �̵����� ����
+    // 필요속성5 : 초기위치, 이동가능 범위
     Vector3 originPos;
     public float moveDistance;
 
-    // �ʿ�Ӽ�6 : Ư���Ÿ�
+    // 필요속성6 : 특정거리
     float returnDistance = 0.1f;
 
-    // �ʿ�Ӽ�7 : hp
-    public float hp = 3f;
+    // 필요속성7 : hp
+    public int hp = 3;
+
+    // 필요속성9 : HP, maxHP, Slider
+    int maxHP = 3;
+    public Slider hpSlider;
+
+    // 필요속성11 : Animator
+    Animator animator;
+
+    // 필요속성12 : 네비게이션 에이전트
+    NavMeshAgent navMeshAgent;
 
     // Start is called before the first frame update
     void Start()
@@ -75,14 +104,26 @@ public class EnemyFSM : MonoBehaviour
 
         characterController = GetComponent<CharacterController>();
 
-        originPos = player.position;
+        originPos = transform.position;
+
+        maxHP = hp;
+
+        animator = GetComponentInChildren<Animator>();
+
+        navMeshAgent = GetComponent<NavMeshAgent>();
+        navMeshAgent.speed = moveSpeed;
     }
 
     // Update is called once per frame
     void Update()
     {
+        // 목표10 : GameManager가 Ready 상태 이거나 GameOver 상태 일 때는 플레이어, 적이 움직일 수 없도록 한다. 
+        if (GameManager.Instance.state != GameManager.GameState.Start   )
+        {
+            return;
+        }
 
-        // ���� : ���� FSM ���̾�׷��� ���� ���۽�Ű�� �ʹ�.
+        // 목적 : 적의 FSM 다이어그램에 따라 동작시키고 싶다.
         switch (enemyState)
         {
             case EnemyState.Idle:
@@ -104,166 +145,223 @@ public class EnemyFSM : MonoBehaviour
                 /*Die();*/
                 break;
         }
+
+        // 목표9 : 현재 에너미의 hp(%)를 hp 슬라이더에 적용한다
+        hpSlider.value = (float)hp / maxHP;
+
     }
 
+    // 목표8 : 1초 후에 내 자신을 제거 하겠다.
     IEnumerator DieProcess()
     {
+        animator.SetTrigger("Die");
+
         yield return new WaitForSeconds(1);
 
-        print("���");
+        print("사망");
         Destroy(gameObject);
     }
 
 
-    // ��ǥ7 : �÷��̾��� ������ ������ Damage��ŭ ���ʹ��� hp�� ���ҽ�Ų��
-    // ��ǥ8 : ���ʹ��� ü���� 0���� ũ�� �ǰݻ��·� ��ȯ
-    // ��ǥ9 : �׷��� ������ �������� ��ȯ
+    // 목표7 : 플레이어의 공격을 받으면 Damage만큼 에너미의 hp를 감소시킨다
+    // 에너미의 체력이 0보다 크면 피격상태로 전환
+    // 그렇지 않으면 죽음으로 전환
     public void DamageAction(int damage)
     {
-        // ����, �̹� ���ʹ̰� �ǰݵưų�, ��� ���¶�� �������� ���� �ʴ´�.
+        navMeshAgent.isStopped = true;
+        navMeshAgent.ResetPath();
+
+        // 만약, 이미 에너미가 피격됐거나, 사망 상태라면 데미지를 주지 않는다.
         if (enemyState == EnemyState.Damage || enemyState == EnemyState.Die)
         {
             return;
         }
-        // �÷��̾��� ���ݷ� ��ŭ hp�� ����
+        // 플레이어의 공격력 만큼 hp를 감소
         hp -= damage;
 
-        // ��ǥ8 : ���ʹ��� ü���� 0���� ũ�� �ǰݻ��·� ��ȯ
+        // 목표13 : 네비게이션 에이전트의 이동을 멈추고 네비게이션 경로를 초기화 해준다.
+        navMeshAgent.isStopped = true;
+        navMeshAgent.ResetPath();
+
+        // 목표8 : 에너미의 체력이 0보다 크면 피격상태로 전환
         if (hp > 0)
         {
             enemyState = EnemyState.Damage;
-            print("���� ��ȯ: Any state -> Damage");
+            print("상태 전환: Any state -> Damage");
             Damaged();
 
+            animator.SetTrigger("Damaged");
+
         }
-        // ��ǥ9 : �׷��� ������ �������� ��ȯ
+        // 목표9 : 그렇지 않으면 죽음으로 전환
         else
         {
             enemyState = EnemyState.Die;
-            print("���� ��ȯ: Any state -> Die");
-            StartCoroutine(DieProcess());
-
+            print("상태 전환: Any state -> Die");
+            StartCoroutine(DieProcess());          
         }
 
     }
 
     private void Damaged()
     {
-        // �ǰ� ��� 0.5
+        // 피격 모션 0.5
 
-        // �ǰ� ���� ó���� ���� �ڷ��� ����
+        // 피격 상태 처리를 위한 코루팅 실행
         StartCoroutine(DamageProssece());
     }
 
-    // ������ ó����
+    // 데미지 처리용
     IEnumerator DamageProssece()
     {
-        // �ǰ� ��� �ð���ŭ ��ٸ���.
+        // 피격 모션 시간만큼 기다린다.
         yield return new WaitForSeconds(0.5f);
 
-        //���� ���¸� �̵� ���·� ��ȯ�Ѵ�.
+        //현재 상태를 이동 상태로 전환한다.
         enemyState = EnemyState.Move;
-        print("���� ��ȯ: Damage -> Move");
+        print("상태 전환: Damage -> Move");
     }
 
-    // ��ǥ5 : �÷��̾ ���󰡴ٰ� �ʱ� ��ġ���� ���� �Ÿ��� ����� Return ���·� ��ȯ�Ѵ�.
+    // 목표6 : 초기 위치로 돌아온다. 특정거리 이내면, Idle 상태로 전환한다.
     private void Return()
     {
         float distanceToOriginPos = (originPos - transform.position).magnitude;
-        //Ư�� �Ÿ� �̳���, Idle ���·� ��ȯ�ϴ�.
+        //특정 거리 이내면, Idle 상태로 전환하다.
         if (distanceToOriginPos > returnDistance)
         {
-            Vector3 dir = (originPos - transform.position).normalized;
-            characterController.Move(dir * moveSpeed * Time.deltaTime);
+            /*           Vector3 dir = (originPos - transform.position).normalized;
+                       characterController.Move(dir * moveSpeed * Time.deltaTime);*/
+            navMeshAgent.isStopped = true;
+            navMeshAgent.ResetPath();
+            navMeshAgent.stoppingDistance = 1f;
+            navMeshAgent.SetDestination(originPos);
+
         }
         else
         {
+            navMeshAgent.isStopped = true;
+            navMeshAgent.ResetPath();
+
             enemyState = EnemyState.Idle;
-            print("���� ��ȯ: Return -> Idle");
+            print("상태 전환: Return -> Idle");
+
+            animator.SetTrigger("Return2Idle");
 
         }
-
     }
 
-    // ��ǥ4 : �÷��̾ ���� ���� �ȿ� ���ý� Ư�� �ð��� �ѹ��� �����Ѵ�.
+    // 목표4 : 플레이어가 공격 범위 안에 들어올시 특정 시간에 한번씩 공격한다.
     private void Attack()
     {
-        // �÷��̾���� �Ÿ��� ���� ���� ���� ������ ���� �÷��̾ ���󰣴�.
+        // 플레이어와의 거리가 공격 범위 내에 있으면 적이 플레이어를 따라간다.
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
 
         if (distanceToPlayer < attackDistance)
         {
             currentTime += Time.deltaTime;
-            //Ư�� �ð��� �ѹ��� �����Ѵ�
+            //특정 시간에 한번씩 공격한다
             if (currentTime > attackDelay)
             {
-                player.GetComponent<PlayerMove>().DamageAction(attackPower);
-                print("����!");
-                currentTime = 0;
+                //플레이어의 HP가 0이하가 되었을 경우 적이 공격을 멈춘다
+                if (player.GetComponent<PlayerMove>().hp > 0)
+                {
+                    //player.GetComponent<PlayerMove>().DamageAction(attackPower);
+                    print("공격!");
+                    currentTime = 0;                  
+                }
+                animator.SetTrigger("AttackDelay2Attack");
             }
         }
         else
         {
-            // �׷��� ������ Move�� ���¸� ��ȯ�Ѵ�.
+            // 그렇지 않으면 Move로 상태를 전환한다.
             enemyState = EnemyState.Move;
-            print("���� ��ȯ: Attack -> Move");
+            print("상태 전환: Attack -> Move");
             currentTime = 0;
 
+            animator.SetTrigger("Attack2Move");
         }
     }
 
-    // ��ǥ3 : ���� ���°� Move�� ��, �÷��̾���� �Ÿ��� ���� ���� ���̸� ���� �÷��̾ ���󰣴�.
+    public void AttackAction()
+    {
+        player.GetComponent<PlayerMove>().DamageAction(attackPower);
+    }
+
+    // 목표3 : 적의 상태가 Move일 때, 플레이어와의 거리가 공격 범위 밖이면 적이 플레이어를 따라간다.
     private void Move()
     {
-        // �÷��̾���� �Ÿ��� ���� ���� ���� ������ ���� �÷��̾ ���󰣴�.
+        // 플레이어와의 거리가 공격 범위 내에 있으면 적이 플레이어를 따라간다.
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
 
-        // ��ǥ5 : �÷��̾ ���󰡴ٰ� �ʱ� ��ġ���� ���� �Ÿ��� ����� �ʱ���ġ�� ���ƿ´�.
+        // 목표5 : 플레이어를 따라가다가 초기 위치에서 일정 거리를 벗어나면 초기위치로 돌아온다.
         float distanceToOriginPos = (originPos - transform.position).magnitude;
         if (distanceToOriginPos > moveDistance)
         {
+            navMeshAgent.isStopped = true;
+            navMeshAgent.ResetPath();
+
             enemyState = EnemyState.Return;
-            print("���� ��ȯ: Move -> Return");
+            print("상태 전환: Move -> Return");
+
+            transform.forward = (originPos - transform.position).normalized;
+
+            animator.SetTrigger("Move2Return");
+
         }
         else
         {
             if (distanceToPlayer > attackDistance)
             {
-                Vector3 dir = (player.position - transform.position).normalized;
+                // 목표15 : 에이전트가 NavMeshLink에 올라가고 내려가는지 확인하여 점프 애니메이션을 넣고싶다.
+                if(navMeshAgent.isOnOffMeshLink)
+                {
+                    object navMeshOwner = navMeshAgent.navMeshOwner;
+                    GameObject navMeshGO = (navMeshOwner as Component).gameObject;
 
-                // �÷��̾ ���󰣴�.
+                    print(navMeshGO.name);
+                }
+
+                /*Vector3 dir = (player.position - transform.position).normalized;
+
+                // 플레이어를 따라간다.
                 characterController.Move(dir * moveSpeed * Time.deltaTime);
+
+                transform.forward = dir;*/
+                navMeshAgent.stoppingDistance = attackDistance;
+                navMeshAgent.SetDestination(player.transform.position);
             }
             else
             {
+                navMeshAgent.isStopped = true;
+                navMeshAgent.ResetPath();
+
                 enemyState = EnemyState.Attack;
-                print("���� ��ȯ: Move -> Attack");
+                print("상태 전환: Move -> Attack");
                 currentTime = attackDelay;
+
+                animator.SetTrigger("Move2AttackDelay");
             }
         }
 
-
-        /*        if (distanceToPlayer > findDistance)
-                {
-                    enemyState = EnemyState.Idle;
-                    print("���� ��ȯ: Move -> Idle");
-                }*/
-
-
-
     }
 
-    // ��ǥ2 : �÷��̾���� �Ÿ��� �����ؼ� Ư�� ���·� ����� �ش�.
+    // 목표2 : 플레이어와의 거리를 측정해서 특정 상태로 만들어 준다.
     private void Idle()
     {
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
         /*float distanceToPlayer = (player.position - transform.position).magnitude;*/
 
-        //���� �÷��̾���� �Ÿ��� Ư�� ���� ���� ���¸� Move�� �ٲ��ش�.
+        
+
+        //현재 플레이어와의 거리가 특정 범위 내면 상태를 Move로 바꿔준다.
         if (distanceToPlayer < findDistance)
         {
             enemyState = EnemyState.Move;
-            print("������ȯ: Idle -> Move");
+            print("상태전환: Idle -> Move");
+
+            // 목표11 : Idle 상태에서 Move상태로 Animation 전환을 한다.
+            animator.SetTrigger("Idle2Move");
         }
     }
 }
