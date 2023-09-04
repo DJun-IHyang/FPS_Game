@@ -60,6 +60,7 @@ public class LoginManager : MonoBehaviour
             //비밀번호가 일치하면
             if (password == pw.text)
             {
+                
                 SceneManager.LoadScene(1);
                 authTxt.text = "로그인 성공.";
             }

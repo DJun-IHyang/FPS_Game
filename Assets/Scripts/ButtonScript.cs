@@ -1,13 +1,13 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using Unity.AI.Navigation;
 using UnityEngine;
 
-// ¸ñÇ¥ : ÇÃ·¹ÀÌ¾î°¡ ¹öÆ°À» ´©¸£¸é ´Ù¸®°¡ ÄÑÁö°í, ³×ºñ°ÔÀÌ¼Ç ¸Å½¬¸¦ ´Ù½Ã ¸¸µç´Ù.
-// ÇÊ¿ä¼Ó¼º : ´Ù¸® °ÔÀÓ¿ÀºêÁ§Æ®, navMeshSurface
+// ëª©í‘œ : í”Œë ˆì´ì–´ê°€ ë²„íŠ¼ì„ ëˆ„ë¥´ë©´ ë‹¤ë¦¬ê°€ ì¼œì§€ê³ , ë„¤ë¹„ê²Œì´ì…˜ ë§¤ì‰¬ë¥¼ ë‹¤ì‹œ ë§Œë“ ë‹¤.
+// í•„ìš”ì†ì„± : ë‹¤ë¦¬ ê²Œì„ì˜¤ë¸Œì íŠ¸, navMeshSurface
 public class ButtonScript : MonoBehaviour
 {
-    // ÇÊ¿ä¼Ó¼º : ´Ù¸® °ÔÀÓ¿ÀºêÁ§Æ®, navMeshSurface
+    // í•„ìš”ì†ì„± : ë‹¤ë¦¬ ê²Œì„ì˜¤ë¸Œì íŠ¸, navMeshSurface
     public GameObject bridge;
     public NavMeshSurface navMeshSurface;   
 
@@ -19,16 +19,16 @@ public class ButtonScript : MonoBehaviour
     }
 
 
-    //isTriggerÀÌ¿ë
+    //isTriggerì´ìš©
     private void OnTriggerEnter(Collider other)
     {
-        // ¸ñÇ¥ : ÇÃ·¹ÀÌ¾î°¡ ¹öÆ°À» ´©¸£¸é ´Ù¸®°¡ ÄÑÁö°í, ³×ºñ°ÔÀÌ¼Ç ¸Å½¬¸¦ ´Ù½Ã ¸¸µç´Ù.
-        //CompareTag - ÅÂ±× ºñ±³
+        // ëª©í‘œ : í”Œë ˆì´ì–´ê°€ ë²„íŠ¼ì„ ëˆ„ë¥´ë©´ ë‹¤ë¦¬ê°€ ì¼œì§€ê³ , ë„¤ë¹„ê²Œì´ì…˜ ë§¤ì‰¬ë¥¼ ë‹¤ì‹œ ë§Œë“ ë‹¤.
+        //CompareTag - íƒœê·¸ ë¹„êµ
         if (other.CompareTag("Player"))
         {
-            //´Ù¸®°¡ ÄÑÁø´Ù
+            //ë‹¤ë¦¬ê°€ ì¼œì§„ë‹¤
             bridge.SetActive(true);
-            //³×ºñ°ÔÀÌ¼Ç ¸Å½¬¸¦ ´Ù½Ã ¸¸µç´Ù.
+            //ë„¤ë¹„ê²Œì´ì…˜ ë§¤ì‰¬ë¥¼ ë‹¤ì‹œ ë§Œë“ ë‹¤.
             navMeshSurface.BuildNavMesh();
         }
     }

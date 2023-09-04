@@ -1,4 +1,5 @@
 ﻿using JetBrains.Annotations;
+using Microsoft.Win32.SafeHandles;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -23,8 +24,8 @@ using UnityEngine;
 // 목적4 : 이동 블랜드 트리의 파라메터 값이 0일 때, Attack Trigger를 시전하겠다.
 // 필요속성 : 자식 오브젝트의 애니메이터
 
-// 목적5 : 키보드의 특정 키입력으로 무기모드를 전환하고 싶다
-// 필요속성5 : 무기모드 열거형변수, 줌 확인 변수, WeaponMode텍스트
+// 목적5 : 키보드의 특정 키입력으로 무기모드를 전환하고 싶다, 동시에 크로스 헤어도 교체해준다
+// 필요속성5 : 무기모드 열거형변수, 줌 확인 변수, WeaponMode텍스트, 크로스헤어1, 크로스헤어2, Rifle이미지, Sniper이미지
 
 // 목적6 : 총을 발사할 때, 일정 시간 후에 사라지는 총구 이펙트를 활성화 한다.
 // 필요속성6. 총구이펙트 배열
@@ -53,6 +54,12 @@ public class PlayerFire : MonoBehaviour
     WeaponMode weaponMode = WeaponMode.Normal;
     bool isZoomMode = false;
     public TMP_Text weaponModeText;
+    public GameObject crossHair1;
+    public GameObject crossHair2;
+    public GameObject rifleUmg;
+    public GameObject sniperImg;
+    public GameObject grenade;
+    public GameObject zoomImg;
 
 
     // 필요속성6. 총구이펙트 배열
@@ -81,7 +88,7 @@ public class PlayerFire : MonoBehaviour
             return;
         }
 
-        // 목적5 : 키보드의 특정 키입력으로 무기모드를 전환하고 싶다
+        // 목적5 : 키보드의 특정 키입력으로 무기모드를 전환하고 싶다, 동시에 크로스 헤어도 교체해준다
         // 5-1. 노멀모드: 마우스 오른쪽 버튼을 누르면 시선 방향으로 수류탄을 던지고 싶다
         // 5-2. 스나이퍼모드: 마우스 오른쪽 버튼을 누르면 화면을 확대하고 싶다
 
@@ -101,15 +108,20 @@ public class PlayerFire : MonoBehaviour
                     Rigidbody rigidbody = bombGO.GetComponent<Rigidbody>();
                     rigidbody.AddForce(Camera.main.transform.forward * power, ForceMode.Impulse);
                     break;
-                    // 5-1. 노멀모드: 마우스 오른쪽 버튼을 누르면 시선 방향으로 수류탄을 던지고 싶다
+                // 5-2. 스나이퍼모드: 마우스 오른쪽 버튼을 누르면 화면을 확대하고 싶다
                 case WeaponMode.Sniper:
                     if (isZoomMode)
                     {
+                        
+                        crossHair2.SetActive(true);
                         Camera.main.fieldOfView = 15;
                         isZoomMode = false;
+                        zoomImg.SetActive(false);
                     }
                     else
                     {
+                        zoomImg.SetActive(true);
+                        crossHair2.SetActive(false);
                         Camera.main.fieldOfView = 60;
                         isZoomMode = true;
                     }
@@ -166,6 +178,13 @@ public class PlayerFire : MonoBehaviour
             weaponModeText.text = "Normal Mode";
 
             Camera.main.fieldOfView = 60;
+
+            crossHair1.SetActive(true);
+            crossHair2.SetActive(false);
+            rifleUmg.SetActive(true);
+            sniperImg.SetActive(false);
+            grenade.SetActive(true);
+            zoomImg.SetActive(false);
         }
         //키보드 숫자 2번을 누르면, 무기모드를 저격 모드로 설정한다.
         else if (Input.GetKeyDown(KeyCode.Alpha2))
@@ -173,6 +192,12 @@ public class PlayerFire : MonoBehaviour
             weaponMode = WeaponMode.Sniper;
 
             weaponModeText.text = "Sniper Mode";
+
+            crossHair1.SetActive(false);
+            crossHair2.SetActive(true);
+            rifleUmg.SetActive(false);
+            sniperImg.SetActive(true);
+            grenade.SetActive(false);
         }
     }
 

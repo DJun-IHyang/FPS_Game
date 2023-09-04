@@ -9,6 +9,18 @@ EditorBuildSettings:
     path: Assets/Scenes/LoginScene.unity
     guid: 5ca20c387ce538f419d1b921cdc03505
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
+    path: Assets/Scenes/PUNScenes/ConnectionScene.unity
+    guid: 670d2a08ea172f04fb740e601c3a29d7
+  - enabled: 1
+    path: Assets/Scenes/LoadingScene.unity
+    guid: 0452c57b4ff0a264caea5a4767a75994
+  - enabled: 1
+    path: Assets/Scenes/InGameScene.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/PUNScenes/LobbyScene.unity
+    guid: 4c3ecf16686c0d4448afdc8cbf8098e5
+  - enabled: 1
+    path: Assets/Scenes/PUNScenes/GameScene.unity
+    guid: 69ef50fbd5486a543a52980474e477c2
   m_configObjects: {}
